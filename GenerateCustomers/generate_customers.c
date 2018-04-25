@@ -27,8 +27,6 @@ void make_queue(){
 
     FILE *customers;
 #ifdef DEBUG
-    FILE *customers2;
-    customers2 = fopen("customers", "ab+");
    const float MAX_TIME = 100;
 #endif
 #ifndef DEBUG
@@ -37,19 +35,21 @@ void make_queue(){
     customers = fopen("customers", "ab+");
 
     srand(time(0));
-
+    int count = 1;
     do {
         arrival_t = rand() % 10;
         current_t += arrival_t;
 
         t_queue = rand() % 300 + 100;
+        count++;
 
 #ifdef DEBUG
-        printf("%-10x%-10x\n", current_t, t_queue);
+        printf("%-10x%-10x\n%-10d", current_t, t_queue, count);
 #endif
         fwrite(&current_t, sizeof(current_t), 1, customers);
         fwrite(&t_queue, sizeof(t_queue), 1, customers);
 
 
     }while(current_t < MAX_TIME);
+    fclose(customers);
 }

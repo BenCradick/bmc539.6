@@ -1,14 +1,11 @@
 CC = gcc
-TARGET = generate_customers
-OBJS = generate_customers.o
-CFLAGS = -std=c11
+TARGET = sim_checkout
+OBJS = sim_checkout.o
 $(TARGET): $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS)
-main.o: generate_customers.c
-	$(CC) -c generate_customers.c
+main.o: sim_checkout.c
+	$(CC) -c sim_checkout.c
 
-debug:
-	$(CC)  generate_customers.c -DDEBUG -std=c11 -o $(TARGET)
 
 clean:
 	/bin/rm -f *.o* $(TARGET)
