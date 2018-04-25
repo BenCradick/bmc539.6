@@ -2,6 +2,13 @@
 # Created by https://www.gitignore.io/api/git,vim,clion
 *.xml
 *.iml
+*generate_customers
+*generate_customers.o
+customers
+sim_checkout
+sim_checkout.o
+
+
 
 acct_info
 ### CLion ###
