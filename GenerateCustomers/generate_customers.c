@@ -27,7 +27,7 @@ void make_queue(){
 
     FILE *customers;
 #ifdef DEBUG
-   const float MAX_TIME = 100;
+   const float MAX_TIME = 3600;
 #endif
 #ifndef DEBUG
     const float MAX_TIME = 3600;
