@@ -8,7 +8,7 @@
 #endif
 //time required to be serviced, time of arrival, time at front of line.
 typedef struct Customer{
-    int t_service, t_enqueue, t_service_start;
+    int t_service, t_enqueue, t_service_start, t_dequeue;
 
     struct Customer *next;
 
@@ -27,6 +27,9 @@ Customer* newCustomer(int t_service, int t_enqueue);
 void enQueue(Queue *queue, int t_service, int t_enqueue);
 Customer *dequeue(Queue *queue);
 int findShortestLine(Queue *queue[]);
+int isEmpty(Queue *q);
+void iterateIdles(Queue**, int);
+
 
     int main()
 {
@@ -34,10 +37,14 @@ int findShortestLine(Queue *queue[]);
     fp = fopen("GenerateCustomers/customers", "rb");
     int num_customers = 0;
     int t = 0;
+    int t_idle = 0;
 
     int cashier = 0;
 
     Queue *cashiers[10];
+    
+    //throwaway node for bean counting
+    Customer *temp;
 
     //initializing array of checkouts
     for(cashier = 0; cashier < 10; cashier++){
@@ -75,7 +82,7 @@ int findShortestLine(Queue *queue[]);
             int t_service = a;
 
             a=0;
-
+            //moving the binary format from a psuedo little endian to something more usable.
             for(b=3; b >= 0; b--)
             {
                 a <<= 8;
@@ -86,6 +93,12 @@ int findShortestLine(Queue *queue[]);
 
         }
         for(t=0; t <= 3600; t++){
+            if(t==holding->front->t_enqueue){
+                temp = dequeue(holding);
+                cashier = findShortestLine(cashiers);
+                enQueue(cashiers[cashier], temp->t_service, temp->t_enqueue);
+                }
+            iterateIdles(cashiers, &t_idle);
 
         }
     }
@@ -141,5 +154,12 @@ int findShortestLine(Queue *queue[]){
     }
     return shortest;
 }
-
-//TODO function to assign values to customers needs to iterate through array and get the hex in the right order.
+int isEmpty(Queue *q){
+    return(q->front == NULL);
+}
+void iterateIdles(Queue *q[], int t_idle){
+    int i;
+    for(i = 0; i < 10; i++){
+        if(isEmpty(q[i])){t_idle++;}
+    }
+}
