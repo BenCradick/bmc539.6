@@ -7,27 +7,42 @@
 #include "GenerateCustomers/generate_customers.h"
 #endif
 //time required to be serviced, time of arrival, time at front of line.
-typedef struct{
+typedef struct Customer{
     int t_service, t_enqueue, t_service_start;
 
     struct Customer *next;
 
 }Customer;
 //Overall queue structure: has a variable attached to the list that gives time spent idle, and the size of the list.
-struct Queue{
+typedef struct{
     
     int t_idle, size;
-    struct Customer *front, *back;
+    Customer *front, *back;
 
-};
+}Queue;
+//Function prototypes.
 //Q is short for Queue
-struct Queue* generateQ();
-struct Customer* newCustomer(int t_service, int t_enqueue);
+Queue* generateQ();
+Customer* newCustomer(int t_service, int t_enqueue);
+void enQueue(Queue *queue, int t_service, int t_enqueue);
+Customer *dequeue(Queue *queue);
+int findShortestLine(Queue *queue[]);
 
-int main(){
+    int main()
+{
     FILE *fp;
     fp = fopen("GenerateCustomers/customers", "rb");
     int num_customers = 0;
+    int t = 0;
+
+    int cashier = 0;
+
+    Queue *cashiers[10];
+
+    //initializing array of checkouts
+    for(cashier = 0; cashier < 10; cashier++){
+        cashiers[cashier] = generateQ();
+    }
 
 
     fseek(fp, 0L, SEEK_END);
@@ -36,6 +51,7 @@ int main(){
     int i = 0;
     unsigned char *buffer;
     buffer = (unsigned char *) malloc(size);
+    Queue *holding = generateQ();
     if (fp == NULL){ /*ERROR detection if file == empty*/
         //printf("Error: There was an Error reading the file %s \n", fp);
         exit(1);
@@ -47,19 +63,83 @@ int main(){
     else{
         int i;
         fread(buffer, sizeof *buffer, size, fp);
-        for(i=0; i<size;i+=4){
-            printf("%02x%02x%02x%02x\t%d\n",buffer[i+3], buffer[i+2], buffer[i+1], buffer[i], i);
+        unsigned long a = 0;
+        for(i=0; i<size;i+=8){
+            int b;
+            a = 0;
+            for (b = 8; b >= 4; b--)
+            {
+                a <<= 8;
+                a |= buffer[i + b];
+            }
+            int t_service = a;
+
+            a=0;
+
+            for(b=3; b >= 0; b--)
+            {
+                a <<= 8;
+                a |= buffer[i + b];
+            }
+            int t_enqueue = a;
+            enQueue(holding, t_service, t_enqueue);
+
+        }
+        for(t=0; t <= 3600; t++){
+
         }
     }
 
     return 0;
 }
-struct Queue* generateQ(){
-    struct Queue *queue = (struct Queue *)malloc(sizeof(struct Queue));
+//Initializes a Q to be populated
+Queue* generateQ(){
+    Queue *queue = (Queue*)malloc(sizeof(Queue));
+    queue->front = queue->back = NULL;
+    queue->size = 0;
+    return queue;
     
 }
-struct Customer *newCustomer(int t_service, int t_enqueue)
-{
-    //Customer
+//initializes new customer node.
+Customer *newCustomer(int t_service, int t_enqueue){
+   Customer *temp = (Customer*)malloc(sizeof(Customer));
+   temp->t_service = t_service;
+   temp->t_enqueue = t_enqueue;
+   temp->next = NULL;
+   return temp;
 }
+//Put thing in Q
+void enQueue(Queue *queue, int t_service, int t_enqueue){
+    Customer *temp = newCustomer(t_service, t_enqueue);
+    if(queue->back == NULL){
+        queue->front = queue->back = temp;
+        queue->size++;
+        return;
+    }
+    queue->back->next = temp;
+    queue->back = temp;
+}
+Customer *dequeue(Queue *queue){
+    if(queue->front == NULL){
+        return NULL;
+    }
+    Customer *temp = queue->front;
+    queue->front = queue->front->next;
+    if(queue->front == NULL){
+        queue->back = NULL;
+    }
+    queue->size--;
+    return temp;
+}
+int findShortestLine(Queue *queue[]){
+    int i;
+    int shortest = 0;
+    for(i = 0; i < 10; i ++){
+        if(queue[i]->size < queue[shortest]->size){
+            shortest = i;
+        }
+    }
+    return shortest;
+}
+
 //TODO function to assign values to customers needs to iterate through array and get the hex in the right order.
