@@ -8,7 +8,7 @@
 #endif
 //time required to be serviced, time of arrival, time at front of line.
 typedef struct Customer{
-    int t_service, t_enqueue, t_service_start, t_dequeue;
+    int t_service, t_enqueue, t_service_start, t_inline;
 
     struct Customer *next;
 
@@ -28,7 +28,8 @@ void enQueue(Queue *queue, int t_service, int t_enqueue);
 Customer *dequeue(Queue *queue);
 int findShortestLine(Queue *queue[]);
 int isEmpty(Queue *q);
-void iterateIdles(Queue**, int);
+void iterateIdles(Queue**, int*);
+void checkNullFrontStarts(Queue**, int);
 
 
     int main()
@@ -99,6 +100,8 @@ void iterateIdles(Queue**, int);
                 enQueue(cashiers[cashier], temp->t_service, temp->t_enqueue);
                 }
             iterateIdles(cashiers, &t_idle);
+            checkNullFrontStarts(cashiers, t);
+            
 
         }
     }
@@ -157,9 +160,28 @@ int findShortestLine(Queue *queue[]){
 int isEmpty(Queue *q){
     return(q->front == NULL);
 }
-void iterateIdles(Queue *q[], int t_idle){
+//sums total idle time, across queues, throughout simulation
+void iterateIdles(Queue *q[], int *t_idle){
     int i;
     for(i = 0; i < 10; i++){
         if(isEmpty(q[i])){t_idle++;}
+    }
+}
+void checkNullFrontStarts(Queue *q[], int t){
+    int i;
+    for(i = 0; i < 10; i++){
+        if(q[i]->front != NULL && q[i]->front->t_service_start == NULL){
+            q[i]->front->t_service_start = t;
+        }
+    }
+}
+void checkForServed(Queue *q[], int t){
+    int i;
+    for (i = 0; i < 10; i++)
+    {
+        if ((q[i]->front->t_service_start + q[i]->front->t_service) == t)
+        {
+            dequeue(q[i]);
+        }
     }
 }
