@@ -31,7 +31,7 @@ int findShortestLine(Queue *queue[]);
 int isEmpty(Queue *q);
 void iterateIdles(Queue **, unsigned int *);
 void checkNullFrontStarts(Queue **, int);
-void checkForServed(Queue **, int, int *);
+void checkForServed(Queue **, int, int *, int *, int *);
 
 int main()
 {
@@ -41,6 +41,8 @@ int main()
     int customers_served = 0;
     int t = 0;
     unsigned int t_idle = 0;
+    int t_inline = 0;
+    int t_wait = 0;
 
     int cashier = 0;
 
@@ -110,17 +112,27 @@ int main()
             {
                 temp = dequeue(holding);
                 cashier = findShortestLine(cashiers);
+                if(cashiers[cashier]->size != 0){
+                    t_inline += (3600 - temp->t_enqueue);
+                }
                 enQueue(cashiers[cashier], temp->t_service, temp->t_enqueue);
+                if(cashiers[cashier]->size == 1){
+                    cashiers[cashier]->front->t_inline = 1;
+                }
+                
+                
+                t_wait+=(3600 - temp->t_enqueue);
             }
             iterateIdles(cashiers, &t_idle);
             checkNullFrontStarts(cashiers, t);
-            //printf("nosegfault");
-            checkForServed(cashiers, t, &customers_served);
+            
+            checkForServed(cashiers, t, &customers_served, &t_wait, &t_inline);
             
         }
     }
-    printf("%-40s%f\n%-40s%u\n%-40s%u\n%-40s%u\n", "Average Cashier Idle Time:", (double)t_idle / 10, "Total Customers During Sim:", num_customers,
-     "Customers Served:", customers_served, "Remaining Customers:", num_customers-customers_served);
+    printf("%-40s%f\n%-40s%u\n%-40s%u\n%-40s%u\n%-40s%f\n%-40s%f\n", "Average Cashier Idle Time:", (double)t_idle / 10, "Total Customers During Sim:", num_customers,
+           "Customers Served:", customers_served, "Remaining Customers:", num_customers - customers_served, "Average Time in Line",
+        (double)t_inline / num_customers, "Average Total Wait Time", (double)t_wait / num_customers);
 
     return 0;
 }
@@ -214,7 +226,7 @@ void checkNullFrontStarts(Queue *q[], int t)
         }
     }
 }
-void checkForServed(Queue *q[], int t, int *customers_served)
+void checkForServed(Queue *q[], int t, int *customers_served,  int* t_wait, int* t_inline)
 {
     int i;
 
@@ -222,7 +234,11 @@ void checkForServed(Queue *q[], int t, int *customers_served)
     {
         while (q[i]->front != NULL && (q[i]->front->t_service_start + q[i]->front->t_service) == t)
         {
+            (*t_wait)-=(3600-t);
             dequeue(q[i]);
+            if(q[i]->front->t_inline != 1){
+                (*t_inline)-= (3600-t);
+            }
             (*customers_served)++;
         }
     }
