@@ -8,6 +8,11 @@ customers
 sim_checkout
 sim_checkout.o
 hexDump
+*
+!*.c
+!*.h
+!makefile
+!*/Gen*
 
 
 
