@@ -7,6 +7,7 @@
 #include <time.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 void make_queue();
 //allows me to test this class independently of the larger program, will write test script to test this file independently.

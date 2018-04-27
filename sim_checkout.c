@@ -36,8 +36,9 @@ void checkForServed2(Queue **, int, int *);
 
 int main()
 {
+    make_queue();
     FILE *fp;
-    fp = fopen("GenerateCustomers/customers", "rb");
+    fp = fopen("customers", "rb");
     int num_customers = 0;
     int customers_served = 0;
     int t = 0;
@@ -184,7 +185,7 @@ int main()
     printf("Using second method:\n%-40s%f\n%-40s%u\n%-40s%u\n%-40s%u\n%-40s%f\n%-40s%f\n", "Average Cashier Idle Time:", (double)t_idle / 10, "Total Customers During Sim:", num_customers,
            "Customers Served:", customers_served, "Remaining Customers:", num_customers - customers_served, "Average Time in Line",
            (double)t_inline / num_customers, "Average Total Wait Time", (double)t_wait / num_customers);
-
+    fclose(fp);
     return 0;
 }
 //Initializes a Q to be populated
